@@ -1,0 +1,53 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.db?timeout=15000"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Modelo para las tarifas de los trayectos
+model ShippingRoute {
+  id             Int      @id @default(autoincrement())
+  name           String   @unique
+  start_kg_price Float
+  extra_kg_price Float
+  createdAt      DateTime @default(now())
+  
+  cities         City[]
+}
+
+// Modelo para las ciudades y su asignación a un trayecto
+model City {
+  id        Int      @id @default(autoincrement())
+  name      String
+  province  String
+  createdAt DateTime @default(now())
+
+  routeId   Int?
+  route     ShippingRoute? @relation(fields: [routeId], references: [id])
+}
+
+// Reemplaza tu modelo Session actual con este
+model Session {
+  id              String    @id
+  shop            String
+  state           String
+  isOnline        Boolean   @default(false)
+  scope           String?
+  expires         DateTime?
+  accessToken     String
+  userId          BigInt?
+  
+  // ▼▼▼ CAMPOS AÑADIDOS ▼▼▼
+  firstName       String?
+  lastName        String?
+  email           String?
+  accountOwner    Boolean   @default(false)
+  locale          String?
+  collaborator    Boolean?  @default(false)
+  emailVerified   Boolean?  @default(false)
+}

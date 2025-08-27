@@ -1,0 +1,21 @@
+{
+  "include": ["env.d.ts", "**/*.ts", "**/*.tsx"],
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "strict": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "removeComments": false,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": false, // Cambia a false para permitir la compilación
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "module": "CommonJS", // Cambia a CommonJS para evitar problemas con ESM
+    "moduleResolution": "Node", // Cambia a Node para compatibilidad
+    "target": "ES2022",
+    "baseUrl": ".",
+    "types": ["node"]
+  }
+}
