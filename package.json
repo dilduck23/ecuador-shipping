@@ -1,7 +1,6 @@
 {
   "name": "ecuador-shipping",
   "private": true,
-
   "scripts": {
     "build": "npx prisma generate && remix build",
     "dev": "shopify app dev",
@@ -20,17 +19,13 @@
     "vite": "vite",
     "postinstall": "npx prisma generate"
   },
-
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
-
   "type": "module",
-
   "engines": {
     "node": "20.x"
   },
-
   "dependencies": {
     "@prisma/client": "^6.13.0",
     "@remix-run/node": "2.16.7",
@@ -46,14 +41,11 @@
     "react-dom": "^18.2.0",
     "vite-tsconfig-paths": "^5.0.1"
   },
-
   "devDependencies": {
     "@vercel/remix": "2.16.7",
     "@remix-run/dev": "2.16.7",
-    "@remix-run/vite": "2.16.7",
     "@remix-run/fs-routes": "2.16.7",
     "@remix-run/route-config": "2.16.7",
-
     "@remix-run/eslint-config": "^2.16.1",
     "@shopify/api-codegen-preset": "^1.1.1",
     "@types/eslint": "^9.6.1",
@@ -68,15 +60,8 @@
     "typescript": "^5.9.2",
     "vite": "^6.2.2"
   },
-
-  "workspaces": [
-    "extensions/*"
-  ],
-
-  "trustedDependencies": [
-    "@shopify/plugin-cloudflare"
-  ],
-
+  "workspaces": ["extensions/*"],
+  "trustedDependencies": ["@shopify/plugin-cloudflare"],
   "resolutions": {
     "@graphql-tools/url-loader": "8.0.16",
     "@graphql-codegen/client-preset": "4.7.0",
@@ -84,22 +69,18 @@
     "minimatch": "9.0.5",
     "vite": "^6.2.2"
   },
-
   "overrides": {
     "@graphql-tools/url-loader": "8.0.16",
     "@graphql-codegen/client-preset": "4.7.0",
     "@graphql-codegen/typescript-operations": "4.5.0",
     "minimatch": "9.0.5",
     "vite": "^6.2.2",
-
     "@remix-run/dev": "2.16.7",
     "@remix-run/react": "2.16.7",
     "@remix-run/node": "2.16.7",
     "@remix-run/serve": "2.16.7",
-    "@remix-run/vite": "2.16.7",
     "@remix-run/fs-routes": "2.16.7",
     "@remix-run/route-config": "2.16.7"
   },
-
-  "author": "DiseñosNovepsa"
+  "author": "Carlos R"
 }
