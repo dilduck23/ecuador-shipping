@@ -1,76 +1,45 @@
+/// <reference types="vite/client" />
+
+import { defineConfig, type Plugin } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
 import { vitePlugin as remix } from "@remix-run/dev";
 import { installGlobals } from "@remix-run/node";
-import { defineConfig, type UserConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
+
+// ⚠️ Solo si vas a desplegar en Vercel:
 import { vercelPreset } from "@vercel/remix/vite";
 
+// Necesario para Remix en runtime (fetch, FormData, etc)
 installGlobals({ nativeFetch: true });
 
-// Fix temporal: compat para import attributes `with { type: "json" }` en node_modules
-function importAttributesCompat() {
+/**
+ * Parche mínimo: convierte
+ *   import data from 'x.json' with { type: 'json' }
+ * a:
+ *   import data from 'x.json' assert { type: 'json' }
+ * durante el parseo.
+ */
+function importAttributesCompat(): Plugin {
   return {
     name: "import-attributes-compat",
-    enforce: "pre" as const,
-    transform(code: string, id: string) {
+    enforce: "pre",
+    transform(code, id) {
       if (!id.includes("node_modules")) return null;
-      if (!id.endsWith(".mjs") && !id.endsWith(".js")) return null;
-
-      // Reescribe `with { type: 'json' }` -> `assert { type: 'json' }`
-      if (code.includes(" with { type: 'json' }") || code.includes(' with { type: "json" }')) {
-        const patched = code.replace(
-          / with \{\s*type:\s*['"]json['"]\s*\}/g,
-          " assert { type: 'json' }"
-        );
-        return { code: patched, map: null };
-      }
-      return null;
+      // súper conservador: sólo cuando el import termina en .json
+      const patched = code.replace(
+        /from\s+(['"][^'"]+\.json['"])\s+with\s*\{\s*type\s*:\s*['"]json['"]\s*\}/g,
+        "from $1 assert { type: 'json' }",
+      );
+      return patched === code ? null : patched;
     },
   };
 }
 
-// Workaround HOST -> SHOPIFY_APP_URL (tu lógica original)
-if (
-  process.env.HOST &&
-  (!process.env.SHOPIFY_APP_URL || process.env.SHOPIFY_APP_URL === process.env.HOST)
-) {
-  process.env.SHOPIFY_APP_URL = process.env.HOST;
-  delete process.env.HOST;
-}
-
-const host = new URL(process.env.SHOPIFY_APP_URL || "http://localhost").hostname;
-
-let hmrConfig;
-if (host === "localhost") {
-  hmrConfig = {
-    protocol: "ws",
-    host: "localhost",
-    port: 64999,
-    clientPort: 64999,
-  };
-} else {
-  hmrConfig = {
-    protocol: "wss",
-    host: host,
-    port: parseInt(process.env.FRONTEND_PORT!) || 8002,
-    clientPort: 443,
-  };
-}
-
 export default defineConfig({
-  server: {
-    allowedHosts: [host],
-    cors: { preflightContinue: true },
-    port: Number(process.env.PORT || 3000),
-    hmr: hmrConfig,
-    fs: { allow: ["app", "node_modules"] },
-  },
   plugins: [
-    // 👇 aplica el parche antes de todo
-    importAttributesCompat(),
+    tsconfigPaths(),
+    // Remix plugin (no lo quites)
     remix({
       ignoredRouteFiles: ["**/.*"],
-      // 👇 preset oficial de Vercel para Remix + Vite
-      presets: [vercelPreset()],
       future: {
         v3_fetcherPersist: true,
         v3_relativeSplatPath: true,
@@ -80,25 +49,33 @@ export default defineConfig({
         v3_routeConfig: true,
       },
     }),
-    tsconfigPaths(),
+    // ⚠️ Sólo si despliegas en Vercel. Si no, comenta esta línea.
+    vercelPreset(),
+    // Parche de import attributes
+    importAttributesCompat(),
   ],
+
+  // Evita que Vite intente pre-optimizar/bundlear estas libs
+  optimizeDeps: {
+    exclude: [
+      "@vercel/remix",
+      "@shopify/shopify-app-remix",
+      "@shopify/polaris/locales/en.json",
+    ],
+  },
+
+  // En SSR, NO intentes bundlear @vercel/remix (manténlo externo)
+  ssr: {
+    external: ["@vercel/remix"],
+  },
+
+  // CORS/HMR iguales a los que ya usabas (opcional)
+  server: {
+    port: Number(process.env.PORT || 3000),
+    fs: { allow: ["app", "node_modules"] },
+  },
+
   build: {
     assetsInlineLimit: 0,
   },
-  optimizeDeps: {
-    // Incluye solo lo necesario del lado cliente
-    include: ["@shopify/app-bridge-react", "@shopify/polaris"],
-    // 🚫 No intentes prebundlear el preset ni el paquete de la app de Shopify
-    exclude: ["@vercel/remix", "@shopify/shopify-app-remix", "@shopify/polaris"],
-    esbuildOptions: {
-      // Evita que esbuild “optimice” import attributes raros
-      supported: {
-        "import-assertions": true,
-      },
-    },
-  },
-  ssr: {
-    // Evita que Vite intente resolver raro en SSR
-    noExternal: ["@shopify/shopify-app-remix", "@shopify/polaris", "@shopify/app-bridge-react"],
-  },
-}) satisfies UserConfig;
+});
