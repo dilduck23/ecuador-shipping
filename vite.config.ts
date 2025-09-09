@@ -5,18 +5,14 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { vitePlugin as remix } from "@remix-run/dev";
 import { installGlobals } from "@remix-run/node";
 
-// ⚠️ Solo si vas a desplegar en Vercel:
-import { vercelPreset } from "@vercel/remix/vite";
-
-// Necesario para Remix en runtime (fetch, FormData, etc)
 installGlobals({ nativeFetch: true });
 
 /**
- * Parche mínimo: convierte
- *   import data from 'x.json' with { type: 'json' }
- * a:
- *   import data from 'x.json' assert { type: 'json' }
- * durante el parseo.
+ * Parche mínimo para vendor: convierte
+ *    import x from 'file.json' with { type: 'json' }
+ * a
+ *    import x from 'file.json' assert { type: 'json' }
+ * cuando aparece en node_modules.
  */
 function importAttributesCompat(): Plugin {
   return {
@@ -24,7 +20,6 @@ function importAttributesCompat(): Plugin {
     enforce: "pre",
     transform(code, id) {
       if (!id.includes("node_modules")) return null;
-      // súper conservador: sólo cuando el import termina en .json
       const patched = code.replace(
         /from\s+(['"][^'"]+\.json['"])\s+with\s*\{\s*type\s*:\s*['"]json['"]\s*\}/g,
         "from $1 assert { type: 'json' }",
@@ -37,7 +32,6 @@ function importAttributesCompat(): Plugin {
 export default defineConfig({
   plugins: [
     tsconfigPaths(),
-    // Remix plugin (no lo quites)
     remix({
       ignoredRouteFiles: ["**/.*"],
       future: {
@@ -49,33 +43,29 @@ export default defineConfig({
         v3_routeConfig: true,
       },
     }),
-    // ⚠️ Sólo si despliegas en Vercel. Si no, comenta esta línea.
-    vercelPreset(),
-    // Parche de import attributes
     importAttributesCompat(),
   ],
 
-  // Evita que Vite intente pre-optimizar/bundlear estas libs
+  // Alias que evita el import con "with { type: 'json' }" de Polaris
+  resolve: {
+    alias: {
+      "@shopify/polaris/locales/en.json": "/app/aliases/polaris-en.js",
+    },
+  },
+
+  // No intentes optimizar/bundlear estas librerías
   optimizeDeps: {
     exclude: [
-      "@vercel/remix",
       "@shopify/shopify-app-remix",
       "@shopify/polaris/locales/en.json",
     ],
   },
 
-  // En SSR, NO intentes bundlear @vercel/remix (manténlo externo)
-  ssr: {
-    external: ["@vercel/remix"],
-  },
+  // Construcción estándar
+  build: { assetsInlineLimit: 0 },
 
-  // CORS/HMR iguales a los que ya usabas (opcional)
   server: {
     port: Number(process.env.PORT || 3000),
     fs: { allow: ["app", "node_modules"] },
-  },
-
-  build: {
-    assetsInlineLimit: 0,
   },
 });
