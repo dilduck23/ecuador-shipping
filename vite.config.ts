@@ -7,13 +7,6 @@ import { installGlobals } from "@remix-run/node";
 
 installGlobals({ nativeFetch: true });
 
-/**
- * Parche mínimo para vendor: convierte
- *    import x from 'file.json' with { type: 'json' }
- * a
- *    import x from 'file.json' assert { type: 'json' }
- * cuando aparece en node_modules.
- */
 function importAttributesCompat(): Plugin {
   return {
     name: "import-attributes-compat",
@@ -21,7 +14,7 @@ function importAttributesCompat(): Plugin {
     transform(code, id) {
       if (!id.includes("node_modules")) return null;
       const patched = code.replace(
-        /from\s+(['"][^'"]+\.json['"])\s+with\s*\{\s*type\s*:\s*['"]json['"]\s*\}/g,
+        /from\s+([\'\"][^\'\"]+\.json[\'\"])\s+with\s*{\s*type\s*:\s*['"]json['"]\s*\}/g,
         "from $1 assert { type: 'json' }",
       );
       return patched === code ? null : patched;
@@ -32,6 +25,7 @@ function importAttributesCompat(): Plugin {
 export default defineConfig({
   plugins: [
     tsconfigPaths(),
+    importAttributesCompat(),
     remix({
       ignoredRouteFiles: ["**/.*"],
       future: {
@@ -43,13 +37,12 @@ export default defineConfig({
         v3_routeConfig: true,
       },
     }),
-    importAttributesCompat(),
   ],
 
   // Alias que evita el import con "with { type: 'json' }" de Polaris
   resolve: {
     alias: {
-      "@shopify/polaris/locales/en.json": "/app/aliases/polaris-en.js",
+      "@shopify/polaris/locales/en.json":       "@shopify/polaris/locales/en.json": "./app/aliases/polaris-en.js",,
     },
   },
 

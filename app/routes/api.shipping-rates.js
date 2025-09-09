@@ -1,19 +1,11 @@
 import { json } from "@remix-run/node";
 import prisma from "../db.server";
 
-// Obtenemos todas las ciudades UNA SOLA VEZ cuando el servidor arranca.
-// Esto es súper eficiente.
-let allDbCities = [];
-prisma.city.findMany({ include: { route: true } })
-  .then(cities => {
-    allDbCities = cities;
-    console.log(`✅ ${allDbCities.length} ciudades cargadas en memoria para cálculos rápidos.`);
-  })
-  .catch(e => console.error("Error al precargar ciudades:", e));
-
-
 export const action = async ({ request }) => {
   try {
+    // Obtenemos todas las ciudades en cada request. 
+    // Para una futura optimización, se podría implementar un caché aquí.
+    const allDbCities = await prisma.city.findMany({ include: { route: true } });
     const { rate } = await request.json();
     if (!rate?.destination?.city) {
       // Si no hay ciudad, no hay tarifas.
@@ -22,12 +14,12 @@ export const action = async ({ request }) => {
 
     // 1. Limpiamos y convertimos a mayúsculas la ciudad que envía Shopify.
     const shopifyCityName = rate.destination.city.trim().toUpperCase();
-    
+
     if (shopifyCityName === "") {
         return json({ rates: [] });
     }
 
-    // 2. Buscamos la ciudad en nuestra lista cargada en memoria (súper rápido).
+    // 2. Buscamos la ciudad en nuestra lista (súper rápido).
     const destinationCity = allDbCities.find(dbCity => dbCity.name.toUpperCase() === shopifyCityName);
 
     // 3. Si no hay ciudad o no tiene una ruta asignada, no hay tarifas.
@@ -37,7 +29,8 @@ export const action = async ({ request }) => {
     }
 
     // 4. Si encontramos la ciudad, calculamos el precio.
-    const { route, name: cityName } = destinationCity;
+    const route = destinationCity.route;
+    const cityName = destinationCity.name;
     const totalWeightInGrams = rate.items.reduce((total, item) => total + (item.grams * item.quantity), 0);
     const totalWeightInKg = totalWeightInGrams / 1000;
 
