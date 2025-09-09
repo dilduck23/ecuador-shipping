@@ -3,6 +3,9 @@ api_version = "2025-07"
 [[extensions]]
 name = "t:name"
 handle = "calculador-tarifas"
+
+uid = "484a83b4-845d-5640-c2bc-7acc91f0025b0dcef953"
+
 type = "function"
 
 description = "t:description"

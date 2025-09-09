@@ -1,13 +1,16 @@
 api_version = "2024-07"
+
 [[extensions]]
 name = "checkout-ui-ciudades"
 handle = "checkout-ui-ciudades"
+
+uid = "13d669a1-d6f5-0250-c637-717b095642f19f28d174"
+
 type = "ui_extension"
 
   [[extensions.targeting]]
   target = "purchase.checkout.delivery-address.render-after"
-  module = "./src/Checkout.tsx"
+  module = "./src/index.tsx"   # 👈 ahora sí usará tu index.tsx
 
 [extensions.capabilities]
 api_access = true
-network_access = true

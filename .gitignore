@@ -1,25 +1,31 @@
-node_modules
+# Node / general
+node_modules/
+npm-debug.log*
+yarn.lock
+pnpm-lock.yaml
 .DS_Store
+*.log
+.tmp/
+temp/
+.cache/
 
-/.cache
-/build
-/app/build
-/public/build/
-/public/_dev
-/app/public/build
-/prisma/dev.sqlite
-/prisma/dev.sqlite-journal
-database.sqlite
+# Remix/Builds
+build/
+dist/
+public/build/
+.server/
+.vercel/
 
+# Shopify CLI / Extensiones
+.shopify-cli/
+extensions/**/dist/
+extensions/**/build/
+
+# Prisma / DB local
+prisma/dev.db
+prisma/dev.db-journal
+
+# Entornos
 .env
 .env.*
-
-
-
-
-
-/extensions/*/dist
-
-# Ignore shopify files created during app dev
-.shopify/*
-.shopify.lock
+!.env.example
