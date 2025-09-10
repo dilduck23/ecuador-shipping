@@ -46,6 +46,7 @@
     "@remix-run/eslint-config": "^2.16.1",
     "@remix-run/fs-routes": "2.16.7",
     "@remix-run/route-config": "2.16.7",
+    "@remix-run/vercel": "2.16.7",
     "@shopify/api-codegen-preset": "^1.1.1",
     "@types/eslint": "^9.6.1",
     "@types/node": "^22.2.0",
@@ -84,7 +85,8 @@
     "@remix-run/node": "2.16.7",
     "@remix-run/serve": "2.16.7",
     "@remix-run/fs-routes": "2.16.7",
-    "@remix-run/route-config": "2.16.7"
+    "@remix-run/route-config": "2.16.7",
+    "@remix-run/vercel": "2.16.7"
   },
   "author": "Carlos R"
 }
