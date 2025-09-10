@@ -42,7 +42,7 @@ export default defineConfig({
   // Alias que evita el import con "with { type: 'json' }" de Polaris
   resolve: {
     alias: {
-      "@shopify/polaris/locales/en.json":       "@shopify/polaris/locales/en.json": "./app/aliases/polaris-en.js",,
+      "@shopify/polaris/locales/en.json": "./app/aliases/polaris-en.js",
     },
   },
 
